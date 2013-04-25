@@ -1,0 +1,24 @@
+<!doctype html>
+<title>fitocracy-map-tracker</title>
+{% if msg %}
+  <h3>{{ msg }}</h3>
+  <a href="#" onclick="history.go(-1);return false;">BACK</a> 
+{% elif username %}
+  {% if map_div %}
+    <div name="map">
+      {{ map_div }} 
+    </div> 
+  {% endif %}
+  {% if task %}
+    <div name="content">
+      <p>{{ username }} is going for a {{ task }}</p> 
+    </div> 
+  {% endif %}
+{% else %}
+  <h1>Please login:</h1>
+  <form action="" method="post">
+    <p>Username: <input type="text" name="username"></p>
+    <p>Password: <input type="password" name="password"></p>
+    <p><input type="submit" value="Login"></p>
+  </form>  
+{% endif %}
