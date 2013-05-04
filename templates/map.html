@@ -3,28 +3,6 @@
 <head>
 <meta charset="utf-8" />
 <title>fitocracy-map-tracker</title>
-<script src="http://maps.google.com/maps/api/js?key=AIzaSyAkpk2uhRupHKRD_MAJi1RyZBdyw08sOw0&libraries=places&sensor=true"></script>
-<script>
-  /* add checks to see if geolocation supported/disabled/fails [[toDo]] */
-  if(navigator.geolocation) {
-    function hasPosition(position) {
-      var point = new google.maps.LatLng(position.coords.latitude, position.coords.longitude),
-                  myOptions = {
-                    zoom: 15,
-                    center: point,
-                    mapTypeId: google.maps.MapTypeId.ROADMAP
-                  }, 
-                  mapDiv = document.getElementById("mapDiv"),
-                  map = new google.maps.Map(mapDiv, myOptions), 
-                  marker = new google.maps.Marker({ 
-                            position: point, 
-                            map: map, 
-                            title: "You are here" 
-                  });
-    }
-    navigator.geolocation.getCurrentPosition(hasPosition);
-  } 
-</script>
 <style>
 #mapDiv {
   width:500px;
@@ -44,6 +22,53 @@
   -webkit-box-shadow:5px 5px 10px #000;
 }
 </style>
+<script src="http://maps.google.com/maps/api/js?key=AIzaSyAkpk2uhRupHKRD_MAJi1RyZBdyw08sOw0&libraries=places&sensor=true"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='debugging.js') }}"></script>
+<script type="text/javascript">
+//<![CDATA[
+  mapDiv = document.getElementById('mapDiv');
+  if(navigator.geolocation) {
+    function hasPosition(position) {
+      var point = new google.maps.LatLng(position.coords.latitude, position.coords.longitude),
+                  myOptions = {
+                    zoom: 15,
+                    center: point,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                  }, 
+                  mapDiv = document.getElementById('mapDiv'),
+                  map = new google.maps.Map(mapDiv, myOptions), 
+                  marker = new google.maps.Marker({ 
+                            position: point, 
+                            map: map, 
+                            title: 'You are here' 
+                  });
+    }
+    function hasNoPosition(e) {
+      switch (e.code) {
+        case 1:  
+          mapDiv.innerHTML += 'Geolocation problem: (permission denied)<br />\n';
+          if (e.message) { mapDiv.innerHTML += e.message }  
+          break;
+        case 2:  
+          mapDiv.innerHTML += 'Geolocation problem: (position unavailable)<br />\n';
+          if (e.message) { mapDiv.innerHTML += e.message }  
+          break;
+        case 3:  
+          mapDiv.innerHTML += 'Geolocation problem: (timeout)<br />\n';
+          if (e.message) { mapDiv.innerHTML += e.message }  
+          break;
+        default:
+          mapDiv.innerHTML += 'Unknown Geolocation problem<br />\n';
+          mapDiv.innerHTML += inspect(e); //debugging
+      }
+    }
+    navigator.geolocation.getCurrentPosition(hasPosition, hasNoPosition, 
+      {maximumAge:4000, timeout:2000, enableHighAccuracy:false}
+    );
+  } 
+  mapDiv.innerHTML += 'Your browser doesn\'t support Geolocation!<br />\n';
+//]]>
+</script>
 </head>
 <body>
 {% if msg %}
@@ -57,11 +82,17 @@
   <div id="mapDiv">
   <!-- google map goes here --> 
   {#
-    # display 'pause, end, restart' buttons in bottom 5% of screen
-    # display path + pace/speed continually (longpoll or eventsource?) 
+    # display mini screenshots of each step of the fitocracy.com navigation
+    # process (eg: click login, click login-with-username, etc...) alongside 
+    # the text description of each step during the AJAX login process
+
+    # display 'pause, end, restart' buttons 
+    
+    # display path + pace/speed continually (geolocation.watchPosition()) 
     # if task paused, drop pin, if task unpaused more than 100 ft
     # from pause location, force starting new task or only unpause once
     # back within 100 ft range of paused-pin. 
+
     # if task ended/restarted, display time/distance/speed to user and
     # upload task to fitocracy.com after user confirms (allow user notes?)
   #}
